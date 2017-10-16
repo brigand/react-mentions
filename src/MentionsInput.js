@@ -430,15 +430,20 @@ class MentionsInput extends React.Component {
   updateSuggestionsIfSuggSizeChange = () => {
     const { suggestionsListRef } = this;
     if (!suggestionsListRef) return;
+
     const suggEl = ReactDOM.findDOMNode(suggestionsListRef);
     if (!suggEl) return;
+
     const { top, right, bottom, left } = suggEl.getBoundingClientRect();
     const last = this.lastSuggBounds;
     const scroll = { top: window.scrollY, left: window.scrollX };
+    const { caretPosition } = this.state;
     const lastScroll = this.lastScroll;
-    if (!last || !lastScroll) {
+    const lastCaret = this.lastCaret;
+    if (!last || !lastScroll || !lastCaret) {
       this.lastSuggBounds = { top, right, bottom, left };
       this.lastScroll = scroll;
+      this.lastCaret = Object.assign({}, caretPosition);
       this.updateSuggestionsPosition();
       return;
     }
@@ -448,11 +453,13 @@ class MentionsInput extends React.Component {
     // only update if the height or scroll position changed
     const sameHeight = !height || Math.abs(height - lastHeight) < 5;
     const sameScroll = scroll.top === lastScroll.top && scroll.left === lastScroll.left;
-    if (sameHeight && sameScroll) {
+    const sameCaret = caretPosition.left === lastCaret.left && caretPosition.top === lastCaret.top;
+    if (sameHeight && sameScroll && sameCaret) {
       return;
     }
     this.lastSuggBounds = { top, right, bottom, left };
     this.lastScroll = scroll;
+    this.lastCaret = Object.assign({}, caretPosition);
     this.updateSuggestionsPosition();
   };
 
@@ -581,11 +588,6 @@ class MentionsInput extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.value !== this.props.value) {
-      setTimeout(() => {
-        this.updateSuggestionsPosition();
-      }, 5);
-    }
     this.updateSuggestionsIfSuggSizeChange();
 
     // maintain selection in case a mention is added/removed causing
