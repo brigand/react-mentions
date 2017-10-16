@@ -424,21 +424,26 @@ class MentionsInput extends React.Component {
     if (!suggEl) return;
     const { top, right, bottom, left } = suggEl.getBoundingClientRect();
     const last = this.lastSuggBounds;
-    if (!last) {
+    const scroll = { top: window.scrollY, left: window.scrollX };
+    const lastScroll = this.lastScroll;
+    if (!last || !lastScroll) {
       this.lastSuggBounds = { top, right, bottom, left };
+      this.lastScroll = scroll;
       this.updateSuggestionsPosition();
       return;
     }
     const height = Math.floor(bottom) - Math.floor(top);
     const lastHeight = Math.floor(last.bottom) - Math.floor(last.top);
-    if (!height || Math.abs(height - lastHeight) < 5) {
+
+    // only update if the height or scroll position changed
+    const sameHeight = !height || Math.abs(height - lastHeight) < 5;
+    const sameScroll = scroll.top === lastScroll.top && scroll.left === lastScroll.left;
+    if (sameHeight && sameScroll) {
       return;
     }
     this.lastSuggBounds = { top, right, bottom, left };
-    // check height change
-    if (lastHeight !== height) {
-      this.updateSuggestionsPosition();
-    }
+    this.lastScroll = scroll;
+    this.updateSuggestionsPosition();
   };
 
   updateSuggestionsPosition = () => {
@@ -505,8 +510,11 @@ class MentionsInput extends React.Component {
         }
       }
       if (pos) {
-        const overflowY = (caretPosition.top + sugHeight) - pos.bottom;
-        if (overflowY > (avoid.maxOverflow || 0)) {
+        const overflowBottom = (caretPosition.top + sugHeight) - pos.bottom;
+        const overflowTop = (pos.top + sugHeight) - caretPosition.top;
+        // if (overflowBottom > (avoid.maxOverflow || 0) && overflowBottom > overflowTop) {
+        console.log({ overflowBottom, overflowTop });
+        if (overflowBottom > overflowTop) {
           placementY = 'top';
         }
         if (left + suggestions.offsetWidth > pos.right) {
