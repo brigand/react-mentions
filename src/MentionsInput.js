@@ -509,11 +509,13 @@ class MentionsInput extends React.Component {
         if (overflowY > (avoid.maxOverflow || 0)) {
           placementY = 'top';
         }
-        // prefer bottom placement
-
-        // then try placing above
-
-        // didAvoid = true;
+        if (left + suggestions.offsetWidth > pos.right) {
+          position.left = null;
+          position.right = 0;
+        } else {
+          position.left = left;
+          position.right = null;
+        }
       }
     }
     if (placementY === 'bottom') {
