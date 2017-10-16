@@ -479,7 +479,6 @@ class MentionsInput extends React.Component {
     // const width = sugBounds.right - sugBounds.left;
     const sugHeight = sugBounds.bottom - sugBounds.top;
 
-    console.log({ sugHeight, left: sugBounds.left, right: sugBounds.right, off: container.offsetWidth});
     // guard for mentions suggestions list clipped by right edge of window
     if (left + (sugBounds.right - sugBounds.left) > container.offsetWidth) {
       position.right = 0;
@@ -529,9 +528,7 @@ class MentionsInput extends React.Component {
 
       if (pos) {
         const overflowBottom = (caretPosition.top + sugHeight + margins.top) - pos.bottom;
-        console.log({ cTop: caretPosition.top, sugHeight, top: pos.top, bottom: pos.bottom});
         const overflowTop = (pos.top + sugHeight + margins.bottom) - (caretPosition.top);
-        console.log({ overflowTop, overflowBottom });
         if (overflowBottom > overflowTop) {
           placementY = 'top';
         }
