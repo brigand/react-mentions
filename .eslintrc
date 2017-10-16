@@ -1,3 +1,21 @@
 {
-    extends: "eslint:recommended"
+    extends: [
+      'eslint:recommended',
+      'plugin:react/recommended',
+    ],
+    parser: 'babel-eslint',
+    plugins: [
+      'react'
+    ],
+    parserOptions: {
+      ecmaVersion: 6,
+      modules: true,
+      jsx: true,
+      sourceType: 'module'
+    },
+    env: { es6: true, browser: true },
+    rules: {
+      "react/no-string-refs": 0,
+      "react/no-find-dom-node": 0,
+    },
 }

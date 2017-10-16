@@ -274,7 +274,7 @@ class MentionsInput extends React.Component {
       return;
     }
 
-    let value = this.props.value || "";
+    let value = this.props.value || '';
     let newPlainTextValue = ev.target.value;
 
     // Derive the new value to set by applying the local change in the textarea's plain text
@@ -414,7 +414,7 @@ class MentionsInput extends React.Component {
         selectionStart: null,
         selectionEnd: null
       });
-    };
+    }
 
     window.setTimeout(() => {
       this.updateHighlighterScroll();
@@ -587,7 +587,7 @@ class MentionsInput extends React.Component {
     this.updateSuggestionsPosition();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate() {
     this.updateSuggestionsIfSuggSizeChange();
 
     // maintain selection in case a mention is added/removed causing
