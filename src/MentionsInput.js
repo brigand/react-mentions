@@ -15,6 +15,9 @@ import utils from './utils';
 import SuggestionsOverlay from './SuggestionsOverlay';
 import Highlighter from './Highlighter';
 
+// places it under the cursor, maybe compute 1em instead of hard coding it
+const TOP_OFFSET = 16;
+
 export const _getTriggerRegex = function(trigger, options={}) {
   if (trigger instanceof RegExp) {
     return trigger
@@ -76,6 +79,14 @@ class MentionsInput extends React.Component {
     avoid: PropTypes.oneOfType([
       PropTypes.shape({
         type: PropTypes.oneOf(['viewport']).isRequired,
+
+        // mostly useful for when there's a fixed header at the top of the screen
+        margins: PropTypes.shape({
+          top: PropTypes.number,
+          right: PropTypes.number,
+          bottom: PropTypes.number,
+          left: PropTypes.number,
+        }),
       }),
       PropTypes.shape({
         type: PropTypes.oneOf(['container']).isRequired,
@@ -489,10 +500,18 @@ class MentionsInput extends React.Component {
       // the position of the container or viewport relative to document
       let pos = null;
 
+      const margins = Object.assign({}, avoid.margins);
+      margins.top = margins.top || 0;
+      margins.right = margins.right || 0;
+      margins.bottom = margins.bottom || 0;
+      margins.left = margins.left || 0;
       if (avoid.type === 'viewport') {
-        pos = { top: window.scrollY, left: window.scrollX };
-        pos.right = pos.left + window.innerWidth;
-        pos.bottom = pos.top + window.innerHeight;
+        pos = {
+          top: window.scrollY + margins.top,
+          left: window.scrollX + margins.left,
+        };
+        pos.right = pos.left + window.innerWidth - margins.right;
+        pos.bottom = pos.top + window.innerHeight - margins.bottom;
       } else if (avoid.type === 'container') {
         let node = ReactDOM.findDOMNode(container);
         while (node) {
@@ -502,16 +521,19 @@ class MentionsInput extends React.Component {
         if (node) {
           const bounds = node.getBoundingClientRect();
           pos = {
-            top: bounds.top + window.scrollY,
-            left: bounds.left + window.scrollX,
-            right: bounds.right + window.scrollX,
-            bottom: bounds.bottom + window.scrollY,
+            top: bounds.top + window.scrollY + margins.top,
+            left: bounds.left + window.scrollX + margins.left,
+            right: bounds.right + window.scrollX - margins.right,
+            bottom: bounds.bottom + window.scrollY - margins.bottom,
           };
         }
       }
+
       if (pos) {
-        const overflowBottom = (caretPosition.top + sugHeight) - pos.bottom;
-        const overflowTop = (pos.top + sugHeight) - caretPosition.top;
+        const overflowBottom = (caretPosition.top + sugHeight + margins.top) - pos.bottom;
+        console.log({ cTop: caretPosition.top, sugHeight, top: pos.top, bottom: pos.bottom});
+        const overflowTop = (pos.top + sugHeight + margins.bottom) - (caretPosition.top);
+        console.log({ overflowTop, overflowBottom });
         if (overflowBottom > overflowTop) {
           placementY = 'top';
         }
@@ -527,7 +549,7 @@ class MentionsInput extends React.Component {
     if (placementY === 'bottom') {
       position.top = caretPosition.top - highlighter.scrollTop;
     } else {
-      position.top = caretPosition.top - highlighter.scrollTop - sugHeight - 16;
+      position.top = caretPosition.top - highlighter.scrollTop - sugHeight - TOP_OFFSET;
       position.bottom = caretPosition.top - highlighter.scrollTop;
     }
 

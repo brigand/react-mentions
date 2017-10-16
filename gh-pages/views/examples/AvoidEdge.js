@@ -20,7 +20,11 @@ function AvoidEdge({ value, data, onChange, onAdd, type }) {
           markup="@[__display__](__type__:__id__)"
           placeholder={"Mention people using '@'"}
           avoid={type === 'viewport'
-            ? { type: 'viewport' }
+            ? {
+              type: 'viewport',
+              // The header covers the top of the mention suggestions
+              margins: { top: 82 },
+            }
             : { type: 'container', parentSelector: '.avoid-edge-container' }
           }
         >
