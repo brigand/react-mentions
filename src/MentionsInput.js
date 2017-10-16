@@ -7,6 +7,8 @@ import values from 'lodash/values';
 import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';
 
+import Portal from 'react-portal';
+
 import { defaultStyle } from 'substyle';
 
 import utils from './utils';
@@ -70,6 +72,16 @@ class MentionsInput extends React.Component {
     onSelect: PropTypes.func,
     onBlur: PropTypes.func,
     onChange: PropTypes.func,
+
+    avoid: PropTypes.oneOfType([
+      PropTypes.shape({
+        type: PropTypes.oneOf(['viewport']).isRequired,
+      }),
+      PropTypes.shape({
+        type: PropTypes.oneOf(['container']).isRequired,
+        parentSelector: PropTypes.string,
+      }),
+    ]),
 
     children: PropTypes.oneOfType([
       PropTypes.element,
@@ -172,20 +184,30 @@ class MentionsInput extends React.Component {
       return null;
     }
     return (
-      <SuggestionsOverlay
-        style={ this.props.style("suggestions") }
-        position={ this.state.suggestionsPosition }
-        focusIndex={ this.state.focusIndex }
-        scrollFocusedIntoView={ this.state.scrollFocusedIntoView }
-        ref="suggestions"
-        suggestions={this.state.suggestions}
-        onSelect={this.addMention}
-        onMouseDown={this.handleSuggestionsMouseDown}
-        onMouseEnter={ (focusIndex) => this.setState({
-          focusIndex,
-          scrollFocusedIntoView: false
-        }) }
-        isLoading={this.isLoading()} />
+      <Portal isOpened={true}>
+        <SuggestionsOverlay
+          onResize={() => this.updateSuggestionsIfSuggSizeChange()}
+          listRef={(el) => {
+            this.suggestionsListRef = el;
+            if (el) {
+              this.updateSuggestionsIfSuggSizeChange();
+            }
+          }}
+          avoid={this.props.avoid}
+          style={ this.props.style("suggestions") }
+          position={ this.state.suggestionsPosition }
+          focusIndex={ this.state.focusIndex }
+          scrollFocusedIntoView={ this.state.scrollFocusedIntoView }
+          ref="suggestions"
+          suggestions={this.state.suggestions}
+          onSelect={this.addMention}
+          onMouseDown={this.handleSuggestionsMouseDown}
+          onMouseEnter={ (focusIndex) => this.setState({
+            focusIndex,
+            scrollFocusedIntoView: false
+          }) }
+          isLoading={this.isLoading()} />
+      </Portal>
     );
   };
 
@@ -395,16 +417,41 @@ class MentionsInput extends React.Component {
     this._suggestionsMouseDown = true;
   };
 
+  updateSuggestionsIfSuggSizeChange = () => {
+    const { suggestionsListRef } = this;
+    if (!suggestionsListRef) return;
+    const suggEl = ReactDOM.findDOMNode(suggestionsListRef);
+    if (!suggEl) return;
+    const { top, right, bottom, left } = suggEl.getBoundingClientRect();
+    const last = this.lastSuggBounds;
+    if (!last) {
+      this.lastSuggBounds = { top, right, bottom, left };
+      this.updateSuggestionsPosition();
+      return;
+    }
+    const height = Math.floor(bottom) - Math.floor(top);
+    const lastHeight = Math.floor(last.bottom) - Math.floor(last.top);
+    if (!height || Math.abs(height - lastHeight) < 5) {
+      return;
+    }
+    this.lastSuggBounds = { top, right, bottom, left };
+    // check height change
+    console.log({ lastHeight, height });
+    if (lastHeight !== height) {
+      this.updateSuggestionsPosition();
+    }
+  };
+
   updateSuggestionsPosition = () => {
     let { caretPosition } = this.state;
 
-    if(!caretPosition || !this.refs.suggestions) {
+    if(!caretPosition || !this.suggestionsListRef) {
       return;
     }
 
     let { container } = this.refs;
 
-    let suggestions = ReactDOM.findDOMNode(this.refs.suggestions);
+    let suggestions = ReactDOM.findDOMNode(this.suggestionsListRef);
     let highlighter = ReactDOM.findDOMNode(this.refs.highlighter);
 
     if(!suggestions) {
@@ -421,7 +468,63 @@ class MentionsInput extends React.Component {
       position.left = left
     }
 
-    position.top = caretPosition.top - highlighter.scrollTop;
+    const sugBounds = suggestions.getBoundingClientRect();
+    // const width = sugBounds.right - sugBounds.left;
+    const sugHeight = sugBounds.bottom - sugBounds.top;
+    if (!sugHeight) {
+      // setTimeout(() => {
+      //   this.updateSuggestionsPosition();
+      // }, 200);
+      return;
+    }
+
+    const { avoid } = this.props;
+    let placementY = 'bottom';
+    // sometimes sugHeight is 0 here for some reason
+    if (sugHeight && avoid) {
+      // the position of the container or viewport relative to document
+      let pos = null;
+
+      if (avoid.type === 'viewport') {
+        pos = { top: window.scrollY, left: window.scrollX };
+        pos.right = pos.left + window.innerWidth;
+        pos.bottom = pos.top + window.innerHeight;
+      } else if (avoid.type === 'container') {
+        let node = ReactDOM.findDOMNode(container);
+        while (node) {
+          node = node.parentNode
+          if (node.matches(avoid.parentSelector)) break
+        }
+        if (node) {
+          const bounds = node.getBoundingClientRect();
+          pos = {
+            top: bounds.top + window.scrollY,
+            left: bounds.left + window.scrollX,
+            right: bounds.right + window.scrollX,
+            bottom: bounds.bottom + window.scrollY,
+          };
+        }
+      }
+      console.log(`pos`, pos);
+      if (pos) {
+        const overflowY = (caretPosition.top + sugHeight) - pos.bottom;
+        console.log({overflowY});
+        if (overflowY > (avoid.maxOverflow || 0)) {
+          placementY = 'top';
+        }
+        // prefer bottom placement
+
+        // then try placing above
+
+        // didAvoid = true;
+      }
+    }
+    if (placementY === 'bottom') {
+      position.top = caretPosition.top - highlighter.scrollTop;
+    } else {
+      position.top = caretPosition.top - highlighter.scrollTop - sugHeight - 16;
+      position.bottom = caretPosition.top - highlighter.scrollTop;
+    }
 
     if(isEqual(position, this.state.suggestionsPosition)) {
       return;
@@ -456,7 +559,7 @@ class MentionsInput extends React.Component {
   }
 
   componentDidUpdate() {
-    this.updateSuggestionsPosition();
+    this.updateSuggestionsIfSuggSizeChange();
 
     // maintain selection in case a mention is added/removed causing
     // the cursor to jump to the end

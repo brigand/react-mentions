@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { defaultStyle } from 'substyle';
+import addResizeListener from 'add-resize-listener';
 
 import utils from './utils';
 
@@ -15,15 +16,37 @@ class SuggestionsOverlay extends Component {
     scrollFocusedIntoView: PropTypes.bool,
     isLoading: PropTypes.bool,
     onSelect: PropTypes.func,
+    onResize: PropTypes.func,
+    listRef: PropTypes.func,
   };
 
   static defaultProps = {
     suggestions: {},
     onSelect: () => null,
+    onResize: () => null,
   };
 
+  componentDidMount() {
+    const { suggestionsRef: suggestions } = this;
+    if (suggestions) {
+      const bounds = suggestions.getBoundingClientRect();
+      if (bounds.bottom - bounds.top > 5) {
+        this.props.onResize();
+      }
+
+      this.removeResize = addResizeListener(suggestions, () => {
+        this.props.onResize();
+      });
+    }
+  }
+
   componentDidUpdate() {
-    const { suggestions } = this.refs
+    const { suggestionsRef: suggestions } = this;
+    if (suggestions && !this.removeResize) {
+      this.removeResize = addResizeListener(suggestions, () => {
+        this.props.onResize();
+      });
+    }
     if (!suggestions || suggestions.offsetHeight >= suggestions.scrollHeight || !this.props.scrollFocusedIntoView) {
       return
     }
@@ -38,6 +61,12 @@ class SuggestionsOverlay extends Component {
       suggestions.scrollTop = top
     } else if(bottom > suggestions.offsetHeight) {
       suggestions.scrollTop = bottom - suggestions.offsetHeight
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.removeResize) {
+      this.removeResize();
     }
   }
 
@@ -56,7 +85,12 @@ class SuggestionsOverlay extends Component {
       >
 
         <ul
-          ref="suggestions"
+          ref={(el) => {
+            this.suggestionsRef = el;
+            if (this.props.listRef) {
+              this.props.listRef(el);
+            }
+          }}
           { ...style("list") }
         >
           { this.renderSuggestions() }

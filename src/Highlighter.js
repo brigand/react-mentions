@@ -57,9 +57,11 @@ class Highlighter extends Component {
       return;
     }
 
+    const bounds = caret.getBoundingClientRect();
+
     let position = {
-      left: caret.offsetLeft,
-      top: caret.offsetTop
+      left: bounds.left + window.scrollX,
+      top: bounds.top + window.scrollY
     };
 
     let { lastPosition } = this.state;

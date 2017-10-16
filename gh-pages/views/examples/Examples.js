@@ -7,6 +7,7 @@ import SingleLine from './SingleLine'
 import Advanced from './Advanced'
 import CssModules from './CssModules'
 import AsyncHashtags from './AsyncHashtags'
+import AvoidEdge from './AvoidEdge'
 
 const users = [
   {
@@ -62,6 +63,14 @@ export default function Examples() {
           </div>
           <div className="col-md-6">
             <AsyncHashtags data={ users } />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-6">
+            <AvoidEdge data={ users } type="viewport" />
+          </div>
+          <div className="col-md-6">
+            <AvoidEdge data={ users } type="container" />
           </div>
         </div>
       </div>
