@@ -4,8 +4,8 @@ export default ({
 
     fontSize: 12,
     fontWeight: 'normal',
-    maxHeight: '4em',
-    overflowY: 'auto',
+    // maxHeight: '4em',
+    // overflowY: 'auto',
   },
 
   input: {
