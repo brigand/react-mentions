@@ -1,3 +1,4 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
@@ -34,10 +35,10 @@ export const _getTriggerRegex = function(trigger, options={}) {
 const _getDataProvider = function(data) {
   if(data instanceof Array) {
     // if data is an array, create a function to query that
-    return function(query, callback) {
+    return function(query) {
       const results = [];
       for(let i=0, l=data.length; i < l; ++i) {
-        const display = data[i].display || data[i].id;
+        const display = data[i].display || data[i].id;
         if(display.toLowerCase().indexOf(query.toLowerCase()) >= 0) {
           results.push(data[i]);
         }
@@ -103,7 +104,7 @@ class MentionsInput extends React.Component {
   static defaultProps = {
     markup: "@[__display__](__id__)",
     singleLine: false,
-    displayTransform: function(id, display, type) {
+    displayTransform: function(id, display) {
       return display;
     },
     onKeyDown: () => null,
@@ -137,7 +138,7 @@ class MentionsInput extends React.Component {
     );
   }
 
-  getInputProps = (isTextarea) => {
+  getInputProps = () => {
     let { readOnly, disabled, style } = this.props;
 
     // pass all props that we don't use through to the input control
@@ -333,6 +334,7 @@ class MentionsInput extends React.Component {
 
     // refresh suggestions queries
     const el = this.refs.input;
+
     if(ev.target.selectionStart === ev.target.selectionEnd) {
       this.updateMentionsQueries(el.value, ev.target.selectionStart);
     } else {
