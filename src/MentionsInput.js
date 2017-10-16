@@ -512,8 +512,6 @@ class MentionsInput extends React.Component {
       if (pos) {
         const overflowBottom = (caretPosition.top + sugHeight) - pos.bottom;
         const overflowTop = (pos.top + sugHeight) - caretPosition.top;
-        // if (overflowBottom > (avoid.maxOverflow || 0) && overflowBottom > overflowTop) {
-        console.log({ overflowBottom, overflowTop });
         if (overflowBottom > overflowTop) {
           placementY = 'top';
         }
