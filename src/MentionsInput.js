@@ -436,7 +436,6 @@ class MentionsInput extends React.Component {
     }
     this.lastSuggBounds = { top, right, bottom, left };
     // check height change
-    console.log({ lastHeight, height });
     if (lastHeight !== height) {
       this.updateSuggestionsPosition();
     }
@@ -505,10 +504,8 @@ class MentionsInput extends React.Component {
           };
         }
       }
-      console.log(`pos`, pos);
       if (pos) {
         const overflowY = (caretPosition.top + sugHeight) - pos.bottom;
-        console.log({overflowY});
         if (overflowY > (avoid.maxOverflow || 0)) {
           placementY = 'top';
         }
