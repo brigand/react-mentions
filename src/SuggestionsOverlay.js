@@ -40,7 +40,7 @@ class SuggestionsOverlay extends Component {
     }
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     const { suggestionsRef: suggestions } = this;
     if (suggestions && !this.removeResize) {
       this.removeResize = addResizeListener(suggestions, () => {
@@ -54,13 +54,19 @@ class SuggestionsOverlay extends Component {
     const scrollTop = suggestions.scrollTop
     let { top, bottom } = suggestions.children[this.props.focusIndex].getBoundingClientRect();
     const { top: topContainer } = suggestions.getBoundingClientRect();
-    top = top - topContainer + scrollTop;
-    bottom = bottom - topContainer + scrollTop;
+    top = (top - topContainer) + scrollTop;
+    bottom = (bottom - topContainer) + scrollTop;
 
     if(top < scrollTop) {
       suggestions.scrollTop = top
     } else if(bottom > suggestions.offsetHeight) {
       suggestions.scrollTop = bottom - suggestions.offsetHeight
+    }
+    if (!prevProps.suggestions ||
+      !this.props.suggestions ||
+      this.props.suggestions.length !== prevProps.suggestions.length
+    ) {
+      this.props.onResize();
     }
   }
 

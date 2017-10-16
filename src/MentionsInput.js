@@ -352,7 +352,6 @@ class MentionsInput extends React.Component {
     const suggestionsComp = this.refs.suggestions;
     if(suggestionsCount === 0 || !suggestionsComp) {
       this.props.onKeyDown(ev);
-
       return;
     }
 
@@ -476,20 +475,19 @@ class MentionsInput extends React.Component {
     let left = caretPosition.left - highlighter.scrollLeft;
     let position = {};
 
+    const sugBounds = suggestions.getBoundingClientRect();
+    // const width = sugBounds.right - sugBounds.left;
+    const sugHeight = sugBounds.bottom - sugBounds.top;
+
+    console.log({ sugHeight, left: sugBounds.left, right: sugBounds.right, off: container.offsetWidth});
     // guard for mentions suggestions list clipped by right edge of window
-    if (left + suggestions.offsetWidth > container.offsetWidth) {
+    if (left + (sugBounds.right - sugBounds.left) > container.offsetWidth) {
       position.right = 0;
     } else {
       position.left = left
     }
 
-    const sugBounds = suggestions.getBoundingClientRect();
-    // const width = sugBounds.right - sugBounds.left;
-    const sugHeight = sugBounds.bottom - sugBounds.top;
     if (!sugHeight) {
-      // setTimeout(() => {
-      //   this.updateSuggestionsPosition();
-      // }, 200);
       return;
     }
 
@@ -585,7 +583,12 @@ class MentionsInput extends React.Component {
     this.updateSuggestionsPosition();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
+    if (prevProps.value !== this.props.value) {
+      setTimeout(() => {
+        this.updateSuggestionsPosition();
+      }, 5);
+    }
     this.updateSuggestionsIfSuggSizeChange();
 
     // maintain selection in case a mention is added/removed causing
