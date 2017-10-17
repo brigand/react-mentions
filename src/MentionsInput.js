@@ -575,14 +575,12 @@ class MentionsInput extends React.Component {
     if(!this.refs.input || !this.refs.highlighter) {
       // since the invocation of this function is deferred,
       // the whole component may have been unmounted in the meanwhile
-      console.log(`updateHighlighterScroll can't update`);
       return;
     }
     const input = ReactDOM.findDOMNode(this.refs.input);
     const highlighter = ReactDOM.findDOMNode(this.refs.highlighter);
     highlighter.scrollLeft = input.scrollLeft;
     highlighter.scrollTop = input.scrollTop;
-    console.log(input.scrollTop);
   };
 
   handleCompositionStart = () => {

@@ -13,7 +13,7 @@
     "prepublish": "npm run transpile",
     "prepages-publish": "npm run env NODE_ENV=production && cd gh-pages && webpack",
     "pages-publish": "grunt publish",
-    "beta": "npm version prerelease --force && npm publish --tag next"
+    "next": "npm version prerelease --force && npm publish --tag next"
   },
   "repository": {
     "type": "git",
