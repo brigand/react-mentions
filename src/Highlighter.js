@@ -28,7 +28,8 @@ class Highlighter extends Component {
 
     displayTransform: PropTypes.func.isRequired,
     onCaretPositionChange: PropTypes.func.isRequired,
-    inputStyle: PropTypes.object
+    inputStyle: PropTypes.object,
+    children: PropTypes.node,
   };
 
   static defaultProps = {
@@ -59,9 +60,10 @@ class Highlighter extends Component {
 
     const bounds = caret.getBoundingClientRect();
 
+    caret.style.boxShadow = '0 0 2px 2px hotpink';
     let position = {
       left: bounds.left + window.scrollX,
-      top: bounds.top + window.scrollY
+      top: bounds.top + window.scrollY,
     };
 
     let { lastPosition } = this.state;
@@ -115,7 +117,7 @@ class Highlighter extends Component {
       substringComponentKey++;
     };
 
-    var mentionIteratee = function(markup, index, indexInPlainText, id, display, type, lastMentionEndIndex) {
+    var mentionIteratee = function(markup, index, indexInPlainText, id, display, type) {
       // generate a component key based on the id
       var key = _generateComponentKey(componentKeys, id);
       components.push(
@@ -127,7 +129,7 @@ class Highlighter extends Component {
     // append a span containing a space, to ensure the last text line has the correct height
     components.push(" ");
 
-    if(components !== resultComponents) {
+    if (components !== resultComponents) {
       // if a caret component is to be rendered, add all components that followed as its children
       resultComponents.push(
         this.renderHighlighterCaret(components)
@@ -137,6 +139,7 @@ class Highlighter extends Component {
     return (
       <div
         { ...style }
+        ref={(root) => { this.root = root; }}
         style={{
           ...inputStyle,
           ...style.style
@@ -184,7 +187,7 @@ class Highlighter extends Component {
       return React.cloneElement(foundChild, props);
     }
 
-    if(childrenCount === 1) {
+    if(childrenCount === 1) {
       // clone single Mention child
       var child = this.props.children.length ? this.props.children[0] : Children.only(this.props.children);
       return React.cloneElement(child, props);
