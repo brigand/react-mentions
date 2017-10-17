@@ -149,6 +149,7 @@ class MentionsInput extends React.Component {
       ...style("input"),
 
       value: this.getPlainText(),
+      onScroll: this.onInputScroll,
 
       ...(!readOnly && !disabled && {
         onChange: this.handleChange,
@@ -264,6 +265,10 @@ class MentionsInput extends React.Component {
     if(this.props.valueLink) {
       return this.props.valueLink.requestChange(event.target.value, ...args);
     }
+  };
+
+  onInputScroll = () => {
+    this.updateHighlighterScroll();
   };
 
   // Handle input element's change event
@@ -575,6 +580,7 @@ class MentionsInput extends React.Component {
     const input = this.refs.input;
     const highlighter = ReactDOM.findDOMNode(this.refs.highlighter);
     highlighter.scrollLeft = input.scrollLeft;
+    highlighter.scrollTop = input.scrollTop;
   };
 
   handleCompositionStart = () => {

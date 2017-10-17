@@ -8,6 +8,7 @@ import Advanced from './Advanced'
 import CssModules from './CssModules'
 import AsyncHashtags from './AsyncHashtags'
 import AvoidEdge from './AvoidEdge'
+import Scroll from './Scroll';
 
 const users = [
   {
@@ -71,6 +72,11 @@ export default function Examples() {
           </div>
           <div className="col-md-6">
             <AvoidEdge data={ users } type="container" />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-6">
+            <Scroll data={ users } />
           </div>
         </div>
       </div>
