@@ -12,7 +12,8 @@
     "pretranspile": "npm run clean",
     "prepublish": "npm run transpile",
     "prepages-publish": "npm run env NODE_ENV=production && cd gh-pages && webpack",
-    "pages-publish": "grunt publish"
+    "pages-publish": "grunt publish",
+    "beta": "npm publish --tag next"
   },
   "repository": {
     "type": "git",
