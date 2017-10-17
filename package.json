@@ -1,6 +1,6 @@
 {
   "name": "@brigand/react-mentions",
-  "version": "1.5.0",
+  "version": "1.5.1-0",
   "description": "React mentions input",
   "main": "lib/index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "prepublish": "npm run transpile",
     "prepages-publish": "npm run env NODE_ENV=production && cd gh-pages && webpack",
     "pages-publish": "grunt publish",
-    "beta": "npm publish --tag next"
+    "beta": "npm version prerelease --force && npm publish --tag next"
   },
   "repository": {
     "type": "git",
