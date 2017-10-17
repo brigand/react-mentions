@@ -48,7 +48,10 @@ class Highlighter extends Component {
   }
 
   componentDidUpdate() {
-    this.notifyCaretPosition()
+    this.notifyCaretPosition();
+    setTimeout(() => {
+      this.notifyCaretPosition();
+    }, 10);
   }
 
   notifyCaretPosition() {
@@ -61,10 +64,16 @@ class Highlighter extends Component {
     const bounds = caret.getBoundingClientRect();
 
     caret.style.boxShadow = '0 0 2px 2px hotpink';
+    let scrollContainer = this.root;
     let position = {
       left: bounds.left + window.scrollX,
       top: bounds.top + window.scrollY,
     };
+
+    if (scrollContainer) {
+      position.top += scrollContainer.scrollTop;
+      position.left += scrollContainer.scrollLeft;
+    }
 
     let { lastPosition } = this.state;
 
@@ -101,12 +110,14 @@ class Highlighter extends Component {
       if(utils.isNumber(caretPositionInMarkup) && caretPositionInMarkup >= index && caretPositionInMarkup <= index + substr.length) {
         // if yes, split substr at the caret position and insert the caret component
         var splitIndex = caretPositionInMarkup - index;
+
         components.push(
           this.renderSubstring(substr.substring(0, splitIndex), substringComponentKey)
         );
 
+        components.push(this.renderHighlighterCaret([<span key={`caret/${substringComponentKey}`} />]));
         // add all following substrings and mention components as children of the caret component
-        components = [ this.renderSubstring(substr.substring(splitIndex), substringComponentKey) ];
+        components.push(this.renderSubstring(substr.substring(splitIndex), substringComponentKey + 1e7));
       } else {
         // otherwise just push the plain text substring
         components.push(
@@ -129,12 +140,12 @@ class Highlighter extends Component {
     // append a span containing a space, to ensure the last text line has the correct height
     components.push(" ");
 
-    if (components !== resultComponents) {
-      // if a caret component is to be rendered, add all components that followed as its children
-      resultComponents.push(
-        this.renderHighlighterCaret(components)
-      );
-    }
+    // if (components !== resultComponents) {
+    //   // if a caret component is to be rendered, add all components that followed as its children
+    //   resultComponents.push(
+    //     this.renderHighlighterCaret(components)
+    //   );
+    // }
 
     return (
       <div
