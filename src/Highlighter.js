@@ -63,7 +63,7 @@ class Highlighter extends Component {
 
     const bounds = caret.getBoundingClientRect();
 
-    caret.style.boxShadow = '0 0 2px 2px hotpink';
+    // caret.style.boxShadow = '0 0 2px 2px hotpink';
     let scrollContainer = this.root;
     let position = {
       left: bounds.left + window.scrollX,
