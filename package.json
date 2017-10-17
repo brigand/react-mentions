@@ -1,6 +1,6 @@
 {
   "name": "@brigand/react-mentions",
-  "version": "1.5.2-0",
+  "version": "1.6.0",
   "description": "React mentions input",
   "main": "lib/index.js",
   "scripts": {
